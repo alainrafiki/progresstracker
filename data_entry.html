@@ -43,7 +43,7 @@
             <div>
                 <label for="month" class="block text-gray-700 text-sm font-bold mb-2">Month and Year:</label>
                 <input type="month" id="month" name="month" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                <p id="month-format-error" class="text-red-500 text-xs italic" style="display: none;">Please use the format YYYY-MM.</p>
+                <p id="month-format-error" class="text-red-500 text-xs italic" style="display: none;">Please use the formatYYYY-MM.</p>
             </div>
             <div>
                 <label for="allAccessNotStarted" class="block text-gray-700 text-sm font-bold mb-2">All Access Translations Not Started:</label>
@@ -58,7 +58,7 @@
                 <input type="number" id="remainingTranslationNeed" name="remainingTranslationNeed" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>
             <div>
-                <label for="workInProgress" class="block text-gray-700 text-sm font-bold mb-2">Work in Progress (Change in Count of Langs with any WIP):</label>
+                <label for="workInProgress" class="block text-gray-700 text-sm font-bold mb-2">Work in Progress:</label>
                 <input type="number" id="workInProgress" name="workInProgress" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>
             <div>
@@ -87,7 +87,7 @@
             event.preventDefault();
 
             const monthInput = document.getElementById('month').value;
-             const monthRegex = /^\d{4}-\d{2}$/;
+            const monthRegex = /^\d{4}-\d{2}$/;
             if (!monthRegex.test(monthInput)) {
                 document.getElementById('month-format-error').style.display = "block";
                 return;
@@ -158,18 +158,24 @@
 
         document.getElementById('export-data-btn').addEventListener('click', function() {
             if (typeof window === 'undefined') {
-                console.error('window is not defined.  This button should only be used in a browser.');
+                console.error('window is not defined. This button should only be used in a browser.');
                 return;
             }
+
             const storedData = JSON.parse(localStorage.getItem('translationData')) || [];
-            if (storedData.length === 0) {
+             if (storedData.length === 0) {
                 alert('No data to export.  Please enter some data first.');
                 return;
             }
 
+            // Generate the data string.
             const dataStr = `const monthlyData = ${JSON.stringify(storedData, null, 2)};`;
+
+            // Create a Blob.
             const blob = new Blob([dataStr], { type: 'application/javascript' });
             const url = URL.createObjectURL(blob);
+
+            // Create a link and trigger the download.
             const a = document.createElement('a');
             a.href = url;
             a.download = 'data.js';
