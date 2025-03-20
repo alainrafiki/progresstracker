@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Translation Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for the info box */
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background-color: #a0aec0; /* Gray 400 */
+            color: white;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-left: 0.25rem; /* Add a little space */
+            position: relative; /* Make sure the icon is a positioning context */
+        }
+
+        .info-box {
+            position: absolute;
+            top: 1.5rem; /* Position below the icon */
+            left: -8rem;
+            background-color: white;
+            border: 1px solid #cbd5e0; /* Gray 300 */
+            padding: 0.5rem;
+            border-radius: 0.375rem; /* Rounded md */
+            width: 16rem;
+            z-index: 10;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.2s ease-in-out;
+            box-shadow: 0 0.5rem 1rem -0.25rem rgba(0, 0, 0, 0.1), 0 0.25rem 0.75rem -0.125rem rgba(0, 0, 0, 0.05);
+        }
+
+        .info-icon:hover + .info-box,
+        .info-box:hover {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .info-box .close-btn {
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            color: #4a5568; /* Gray 600 */
+        }
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background-color: #2563eb;
+        }
+
+        .active-nav-link {
+            background-color: #1e40af;
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <header class="bg-blue-600 text-white text-center py-4 rounded-md shadow-md mb-8">
+        <div class="flex justify-center gap-4 mb-2">
+            <a href="index.html" class="nav-link active-nav-link">Dashboard</a>
+            <a href="data_entry.html" class="nav-link">Data Entry</a>
+        </div>
+        <h1 class="text-2xl font-semibold">Monthly Translation Dashboard</h1>
+    </header>
+    <main class="container mx-auto">
+        <section id="data-display" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="data-item bg-white rounded-md shadow-md p-6 flex flex-col justify-between">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">All Access Translations Not Started</h2>
+                <p class="text-2xl font-bold text-gray-800" id="all-access-not-started-value"></p>
+                <p class="text-gray-600 flex items-center" id="all-access-not-started-change">
+                    <span></span>
+                    <span class="info-icon">?</span>
+                    <div class="info-box">
+                        <span class="close-btn">&times;</span>
+                        <p id="all-access-not-started-explanation"></p>
+                    </div>
+                </p>
+            </div>
+            <div class="data-item bg-white rounded-md shadow-md p-6 flex flex-col justify-between">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">All Access Goal Not Met Population (excluding Top 100)</h2>
+                <p class="text-2xl font-bold text-gray-800" id="all-access-goal-not-met-value"></p>
+                <p class="text-gray-600 flex items-center" id="all-access-goal-not-met-change">
+                    <span></span>
+                    <span class="info-icon">?</span>
+                    <div class="info-box">
+                        <span class="close-btn">&times;</span>
+                        <p id="all-access-goal-not-met-explanation"></p>
+                    </div>
+                </p>
+            </div>
+            <div class="data-item bg-white rounded-md shadow-md p-6 flex flex-col justify-between">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">Remaining Translation Need</h2>
+                <p class="text-2xl font-bold text-gray-800" id="remaining-translation-need-value"></p>
+                <p class="text-gray-600 flex items-center" id="remaining-translation-need-change">
+                    <span></span>
+                    <span class="info-icon">?</span>
+                    <div class="info-box">
+                        <span class="close-btn">&times;</span>
+                        <p id="remaining-translation-need-explanation"></p>
+                    </div>
+                </p>
+            </div>
+            <div class="data-item bg-white rounded-md shadow-md p-6 flex flex-col justify-between">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">Work in Progress</h2>
+                <p class="text-2xl font-bold text-gray-800" id="work-in-progress-value"></p>
+                <p class="text-gray-600 flex items-center" id="work-in-progress-change">
+                    <span></span>
+                    <span class="info-icon">?</span>
+                    <div class="info-box">
+                        <span class="close-btn">&times;</span>
+                        <p id="work-in-progress-explanation"></p>
+                    </div>
+                </p>
+            </div>
+            <div class="data-item bg-white rounded-md shadow-md p-6 flex flex-col justify-between">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">Completed Scripture</h2>
+                <p class="text-2xl font-bold text-gray-800" id="completed-scripture-value"></p>
+                <p class="text-gray-600 flex items-center" id="completed-scripture-change">
+                    <span></span>
+                    <span class="info-icon">?</span>
+                    <div class="info-box">
+                        <span class="close-btn">&times;</span>
+                        <p id="completed-scripture-explanation"></p>
+                    </div>
+                </p>
+            </div>
+             <div class="data-item bg-white rounded-md shadow-md p-6 flex flex-col justify-between">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">Total Bibles</h2>
+                <p class="text-2xl font-bold text-gray-800" id="total-bibles-value"></p>
+                <p class="text-gray-600 flex items-center" id="total-bibles-change">
+                    <span></span>
+                    <span class="info-icon">?</span>
+                    <div class="info-box">
+                        <span class="close-btn">&times;</span>
+                        <p id="total-bibles-explanation"></p>
+                    </div>
+                </p>
+            </div>
+            <div class="data-item bg-white rounded-md shadow-md p-6 flex flex-col justify-between">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">Total ISO Languages</h2>
+                <p class="text-2xl font-bold text-gray-800" id="iso-languages-value"></p>
+                <p class="text-gray-600 flex items-center" id="iso-languages-change">
+                    <span></span>
+                    <span class="info-icon">?</span>
+                    <div class="info-box">
+                        <span class="close-btn">&times;</span>
+                        <p id="iso-languages-explanation"></p>
+                    </div>
+                </p>
+            </div>
+            <div class="data-item bg-white rounded-md shadow-md p-6 flex flex-col justify-between">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">Total Living Languages</h2>
+                <p class="text-2xl font-bold text-gray-800" id="living-languages-value"></p>
+                <p class="text-gray-600 flex items-center" id="living-languages-change">
+                    <span></span>
+                    <span class="info-icon">?</span>
+                    <div class="info-box">
+                        <span class="close-btn">&times;</span>
+                        <p id="living-languages-explanation"></p>
+                    </div>
+                </p>
+            </div>
+        </section>
+        <section id="trend-charts" class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+            <div class="chart-container bg-white rounded-md shadow-md p-4">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4 text-center">All Access Translations Not Started</h2>
+                <canvas id="allAccessNotStartedChart"></canvas>
+            </div>
+            <div class="chart-container bg-white rounded-md shadow-md p-4">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4 text-center">All Access Goal Not Met Population</h2>
+                <canvas id="allAccessGoalNotMetChart"></canvas>
+            </div>
+            <div class="chart-container bg-white rounded-md shadow-md p-4">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4 text-center">Remaining Translation Need</h2>
+                <canvas id="remainingTranslationNeedChart"></canvas>
+            </div>
+            <div class="chart-container bg-white rounded-md shadow-md p-4">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4 text-center">Work In Progress</h2>
+                <canvas id="workInProgressChart"></canvas>
+            </div>
+            <div class="chart-container bg-white rounded-md shadow-md p-4">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4 text-center">Completed Scripture</h2>
+                <canvas id="completedScriptureChart"></canvas>
+            </div>
+            <div class="chart-container bg-white rounded-md shadow-md p-4">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4 text-center">Total Bibles</h2>
+                <canvas id="totalBiblesChart"></canvas>
+            </div>
+            <div class="chart-container bg-white rounded-md shadow-md p-4">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4 text-center">Total ISO Languages</h2>
+                <canvas id="isoLanguagesChart"></canvas>
+            </div>
+            <div class="chart-container bg-white rounded-md shadow-md p-4">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4 text-center">Total Living Languages</h2>
+                <canvas id="livingLanguagesChart"></canvas>
+            </div>
+        </section>
+    </main>
+    <script src="data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+
+            // Function to populate data
+            function populateData(data, month) {
+                document.getElementById('all-access-not-started-value').textContent = data.allAccessNotStarted.value;
+                const allAccessNotStartedChangeElement = document.getElementById('all-access-not-started-change');
+                allAccessNotStartedChangeElement.textContent = `(${data.allAccessNotStarted.change > 0 ? '+' : ''}${data.allAccessNotStarted.change})`;
+                allAccessNotStartedChangeElement.classList.toggle('text-green-500', data.allAccessNotStarted.change > 0);
+                allAccessNotStartedChangeElement.classList.toggle('text-red-500', data.allAccessNotStarted.change < 0);
+                document.getElementById('all-access-not-started-explanation').textContent = data.allAccessNotStarted.explanation;
+
+                document.getElementById('all-access-goal-not-met-value').textContent = data.allAccessGoalNotMet.value + 'B';
+                const allAccessGoalNotMetChangeElement = document.getElementById('all-access-goal-not-met-change');
+                allAccessGoalNotMetChangeElement.textContent = `(${data.allAccessGoalNotMet.change > 0 ? '+' : ''}${data.allAccessGoalNotMet.change}B)`;
+                allAccessGoalNotMetChangeElement.classList.toggle('text-green-500', data.allAccessGoalNotMet.change > 0);
+                allAccessGoalNotMetChangeElement.classList.toggle('text-red-500', data.allAccessGoalNotMet.change < 0);
+                document.getElementById('all-access-goal-not-met-explanation').textContent = data.allAccessGoalNotMet.explanation;
+
+                document.getElementById('remaining-translation-need-value').textContent = data.remainingTranslationNeed.value;
+                const remainingTranslationNeedChangeElement = document.getElementById('all-access-goal-not-met-change');
+                remainingTranslationNeedChangeElement.textContent = `(${data.remainingTranslationNeed.change > 0 ? '+' : ''}${data.remainingTranslationNeed.change})`;
+                remainingTranslationNeedChangeElement.classList.toggle('text-green-500', data.remainingTranslationNeed.change > 0);
+                remainingTranslationNeedChangeElement.classList.toggle('text-red-500', data.remainingTranslationNeed.change < 0);
+                document.getElementById('remaining-translation-need-explanation').textContent = data.remainingTranslationNeed.explanation;
+
+                document.getElementById('work-in-progress-value').textContent = data.workInProgress.value;
+                const workInProgressChangeElement = document.getElementById('work-in-progress-change');
+                workInProgressChangeElement.textContent = `(${data.workInProgress.change > 0 ? '+' : ''}${data.workInProgress.change})`;
+                workInProgressChangeElement.classList.toggle('text-green-500', data.workInProgress.change > 0);
+                workInProgressChangeElement.classList.toggle('text-red-500', data.workInProgress.change < 0);
+                 document.getElementById('work-in-progress-explanation').textContent = data.workInProgress.explanation;
+
+                document.getElementById('completed-scripture-value').textContent = data.completedScripture.value;
+                const completedScriptureChangeElement = document.getElementById('completed-scripture-change');
+                completedScriptureChangeElement.textContent = `(${data.completedScripture.change > 0 ? '+' : ''}${data.completedScripture.change})`;
+                completedScriptureChangeElement.classList.toggle('text-green-500', data.completedScripture.change > 0);
+                completedScriptureChangeElement.classList.toggle('text-red-500', data.completedScripture.change < 0);
+                document.getElementById('completed-scripture-explanation').textContent = data.completedScripture.explanation;
+
+                document.getElementById('total-bibles-value').textContent = data.totalBibles.value;
+                const totalBiblesChangeElement = document.getElementById('total-bibles-change');
+                totalBiblesChangeElement.textContent = `(${data.totalBibles.change > 0 ? '+' : ''}${data.totalBibles.change})`;
+                totalBiblesChangeElement.classList.toggle('text-green-500', data.totalBibles.change > 0);
+                totalBiblesChangeElement.classList.toggle('text-red-500', data.totalBibles.change < 0);
+                document.getElementById('total-bibles-explanation').textContent = data.totalBibles.explanation;
+
+                document.getElementById('iso-languages-value').textContent = data.isoLanguages.value;
+                const isoLanguagesChangeElement = document.getElementById('iso-languages-change');
+                isoLanguagesChangeElement.textContent = `(${data.isoLanguages.change > 0 ? '+' : ''}${data.isoLanguages.change})`;
+                isoLanguagesChangeElement.classList.toggle('text-green-500', data.isoLanguages.change > 0);
+                isoLanguagesChangeElement.classList.toggle('text-red-500', data.isoLanguages.change < 0);
+                document.getElementById('iso-languages-explanation').textContent = data.isoLanguages.explanation;
+
+                document.getElementById('living-languages-value').textContent = data.livingLanguages.value;
+                const livingLanguagesChangeElement = document.getElementById('living-languages-change');
+                livingLanguagesChangeElement.textContent = `(${data.livingLanguages.change > 0 ? '+' : ''}${data.livingLanguages.change})`;
+                livingLanguagesChangeElement.classList.toggle('text-green-500', data.livingLanguages.change > 0);
+                livingLanguagesChangeElement.classList.toggle('text-red-500', data.livingLanguages.change < 0);
+                document.getElementById('living-languages-explanation').textContent = data.livingLanguages.explanation;
+            }
+
+
+
+            // --- Trend Charts ---
+            function createChart(canvasId, data, title, startMonth) { // Added startMonth parameter
+                const ctx = document.getElementById(canvasId).getContext('2d');
+
+                // Generate labels for the rolling 12 months
+                const labels = [];
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                let currentMonth = startMonth;
+                for (let i = 0; i < 12; i++) {
+                    labels.push(months[currentMonth]);
+                    currentMonth = (currentMonth + 1) % 12; // Wrap around
+                }
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels, // Use the generated labels
+                        datasets: [{
+                            label: title,
+                            data: data,
+                            backgroundColor: '#60a5fa', // Blue 400
+                            borderColor: '#3b82f6', // Blue 600
+                            borderWidth: 2,
+                            fill: false,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#3b82f6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false, // Remove legend
+                            },
+                        }
+                    }
+                });
+            }
+
+            // Get the current month (0-indexed)
+            const currentMonth = new Date().getMonth();
+            // Calculate the starting month for the charts
+            const startMonth = (currentMonth - 11 + 12) % 12; // Ensure positive
+
+            // Initial data load and chart creation
+            const initialData = monthlyData[monthlyData.length-1];
+            populateData(initialData, 'January 2025');
+            createChart('allAccessNotStartedChart', monthlyData.map(d => d.allAccessNotStarted.value), 'All Access Translations Not Started', startMonth);
+            createChart('allAccessGoalNotMetChart', monthlyData.map(d => d.allAccessGoalNotMet.value), 'All Access Goal Not Met Population', startMonth);
+            createChart('remainingTranslationNeedChart', monthlyData.map(d => d.remainingTranslationNeed.value), 'Remaining Translation Need', startMonth);
+            createChart('workInProgressChart', monthlyData.map(d => d.workInProgress.value), 'Work In Progress', startMonth);
+            createChart('completedScriptureChart', monthlyData.map(d => d.completedScripture.value), 'Completed Scripture', startMonth);
+            createChart('totalBiblesChart', monthlyData.map(d => d.totalBibles.value), 'Total Bibles', startMonth);
+            createChart('isoLanguagesChart', monthlyData.map(d => d.isoLanguages.value), 'Total ISO Languages', startMonth);
+            createChart('livingLanguagesChart', monthlyData.map(d => d.livingLanguages.value), 'Total Living Languages', startMonth);
+
+
+            // Add event listeners to close buttons
+            document.querySelectorAll('.info-box .close-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentNode.style.visibility = 'hidden';
+                    this.parentNode.style.opacity = 0;
+                });
+            });
+        });
+    </script>
+</body></html>
